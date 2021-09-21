@@ -1,4 +1,5 @@
 #Use git flow for deployments see: https://github.com/Iberia-Ent/software-engineering--git-flow-template
+#Git Flow
 name: CICD_JAVA_MAVEN
 
 on:  
@@ -101,8 +102,6 @@ jobs:
     outputs:
       CODEARTIFACT_AUTH_TOKEN: ${{ env.CODEARTIFACT_AUTH_TOKEN }}
     env:
-      AWS_REGION: ${{ needs.Init.outputs.AWS_REGION }}
-      ENVIRONMENT_NAME: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
       AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
       AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
       ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_NAME }}
@@ -111,18 +110,15 @@ jobs:
       ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
       LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
       LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_URL }}
-      JAVA_JDK_VERSION: ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
-      JAVA_DISTRIBUTION: ${{ needs.Init.outputs.JAVA_DISTRIBUTION }}
-      SUFIX_ARTIFACT_VERSION: ${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}
       
     steps: 
     - uses: actions/checkout@v2
 
-    - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
+    - name: Set up JDK ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
       with:
-        java-version: '${{ env.JAVA_JDK_VERSION }}'
-        distribution: '${{ env.JAVA_DISTRIBUTION }}'
+        java-version: '${{ needs.Init.outputs.JAVA_JDK_VERSION }}'
+        distribution: '${{ needs.Init.outputs.JAVA_DISTRIBUTION }}'
         cache: 'maven'
 
     - name: Configure AWS credentials from DevOps account
@@ -130,7 +126,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ needs.Init.outputs.AWS_REGION }}
 
     - name: Set Up CodeArtifact Token   
       run: |         
@@ -154,8 +150,6 @@ jobs:
     outputs:
       POM_VERSION: ${{ env.POM_VERSION }}
     env:
-      ENVIRONMENT_NAME: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
-      AWS_REGION: ${{ needs.Init.outputs.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
       AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
       CODEARTIFACT_AUTH_TOKEN: ${{ needs.CI.outputs.CODEARTIFACT_AUTH_TOKEN }}
@@ -165,18 +159,15 @@ jobs:
       ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
       LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
       LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_URL }}
-      JAVA_JDK_VERSION: ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
-      JAVA_DISTRIBUTION: ${{ needs.Init.outputs.JAVA_DISTRIBUTION }}
-      SUFIX_ARTIFACT_VERSION: ${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}
       
     steps: 
     - uses: actions/checkout@v2
 
-    - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
+    - name: Set up JDK ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
       with:
-        java-version: '${{ env.JAVA_JDK_VERSION }}'
-        distribution: '${{ env.JAVA_DISTRIBUTION }}'
+        java-version: '${{ needs.Init.outputs.JAVA_JDK_VERSION }}'
+        distribution: '${{ needs.Init.outputs.JAVA_DISTRIBUTION }}'
         cache: 'maven'
 
     - name: Configure AWS credentials from DevOps account
@@ -184,7 +175,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ needs.Init.outputs.AWS_REGION }}
         
     - name: Uploading Artifact to AWS CodeArtifact    
       run: |
@@ -197,12 +188,12 @@ jobs:
         echo POM_VERSION=$POM_VERSION >> $GITHUB_ENV
         ARTIFACT_VERSION=$POM_VERSION
       
-        if [ ! -z "$SUFIX_ARTIFACT_VERSION" ]
+        if [ ! -z "${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}" ]
         then
-           ARTIFACT_VERSION="$POM_VERSION-$SUFIX_ARTIFACT_VERSION"
+           ARTIFACT_VERSION="$POM_VERSION-${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}"
         fi
       
-        echo SUFIX_ARTIFACT_VERSION=$SUFIX_ARTIFACT_VERSION
+        echo SUFIX_ARTIFACT_VERSION=${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}
         echo ARTIFACT_VERSION=$ARTIFACT_VERSION 
       
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -230,14 +221,12 @@ jobs:
     needs: [CD]
     if: github.event_name == 'pull_request' && github.ref == 'staging' && github.event.pull_request.merged
     runs-on: ubuntu-latest
-    env:
-      POM_VERSION: ${{ needs.CD.outputs.POM_VERSION }}
     steps:
       - uses: actions/checkout@v2 
     
       - name: Tagging to Staging Branch        
         run: |
-            artifactTag=v$POM_VERSION
+            artifactTag=v${{ needs.CD.outputs.POM_VERSION }}
             echo "Tag Id: $artifactTag"
             messageTag="Tag $artifactTag created automatically new version of product"
             echo "Message Tag: $messageTag"            
