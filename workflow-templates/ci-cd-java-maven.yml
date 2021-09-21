@@ -1,0 +1,248 @@
+#Use git flow for deployments see: https://github.com/Iberia-Ent/software-engineering--git-flow-template
+name: CICD_JAVA_MAVEN
+
+on:  
+  push:  
+    branches-ignore: [ $default-branch, develop, staging ]    
+  pull_request:  
+    branches: [ develop, staging ]
+    types:  [ opened, reopened, closed ]
+  release:
+    types:
+      - created
+
+jobs:
+  Init:
+    name: Set up variables
+    runs-on: ubuntu-latest    
+    outputs:
+      ENVIRONMENT_NAME: ${{ env.ENVIRONMENT_NAME }}
+      AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+      AWS_CODEARTIFACT_DOMAIN: ${{ env.AWS_CODEARTIFACT_DOMAIN }}
+      AWS_REGION: ${{ env.AWS_REGION }}
+      ARTIFACT_REPOSITORY_NAME: ${{ env.ARTIFACT_REPOSITORY_NAME }}      
+      ARTIFACT_REPOSITORY_URL: ${{ env.ARTIFACT_REPOSITORY_URL }}
+      ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ env.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
+      ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ env.ARTIFACT_REPOSITORY_CENTRAL_URL }}
+      LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ env.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
+      LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ env.LIBRARY_ARTIFACT_REPOSITORY_URL }}
+      JAVA_JDK_VERSION: ${{ env.JAVA_JDK_VERSION }}
+      JAVA_DISTRIBUTION: ${{ env.JAVA_DISTRIBUTION }}
+      SUFIX_ARTIFACT_VERSION: ${{ env.SUFIX_ARTIFACT_VERSION }}
+      DEPLOYMENT_GROUP_NAME: ${{ env.DEPLOYMENT_GROUP_NAME }}
+      DEPLOYMENT_CONFIG_NAME: ${{ env.DEPLOYMENT_CONFIG_NAME }}
+      DEPLOYMENT_URL: ${{ env.DEPLOYMENT_URL }}
+      
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Up Environment Name
+      run: |
+        if [ ${{ github.event_name }} = pull_request ] && [ ${{ github.event.pull_request.merged }} ] && ( [ ${{ github.ref }} = develop ] ) || [ ${{ github.event_name }} = push ]
+        then
+            DATA_JSON_FILE=`jq -c '.dev' ci-config.json`      
+            echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            echo DATA_JSON_FILE DEV: "$DATA_JSON_FILE"
+            echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            ENVIRONMENT_NAME=Development
+            echo ENVIRONMENT_NAME=Development >> $GITHUB_ENV
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        elif [ ${{ github.event_name }} = pull_request ] && [ ${{ github.head_ref }} = develop ] && ( ( [ ${{ github.event.action }} = opened ] || [ ${{ github.event.action }} = reopened ] ) && [ ${{ github.base_ref }} = staging ] ) || ( [ ${{ github.ref }} = staging ] && [ ${{ github.event.pull_request.merged }} ] )
+        then
+            DATA_JSON_FILE=`jq -c '.pre' ci-config.json`      
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            echo DATA_JSON_FILE PRE: "$DATA_JSON_FILE"
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            ENVIRONMENT_NAME=Preproduction
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        elif ( [[ ${{ github.ref }} == refs/tags/v* ]] || [[ ${{ github.ref }} == refs/tags/HOTFIX_* ]] && [ ${{ github.event_name }} = release ] )
+        then
+            DATA_JSON_FILE=`jq -c '.prod' ci-config.json`      
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            echo DATA_JSON_FILE PRO: "$DATA_JSON_FILE"
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            ENVIRONMENT_NAME=Production
+            echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        fi
+        
+        echo ENVIRONMENT_NAME=$ENVIRONMENT_NAME >> $GITHUB_ENV
+        echo ENVIRONMENT_NAME: "$ENVIRONMENT_NAME"
+        if [ ! -z "$ENVIRONMENT_NAME" ]
+        then
+            echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            echo   SETUP PROPIERTIES OF THE ENVIRONMENT: $ENVIRONMENT_NAME and file:"$DATA_JSON_FILE"
+            echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+            echo AWS_ACCOUNT_ID=`jq -r '.AWS_ACCOUNT_ID' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo AWS_CODEARTIFACT_DOMAIN=`jq -r '.AWS_CODEARTIFACT_DOMAIN' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo ARTIFACT_REPOSITORY_NAME=`jq -r '.ARTIFACT_REPOSITORY_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo ARTIFACT_REPOSITORY_URL=`jq -r '.ARTIFACT_REPOSITORY_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo ARTIFACT_REPOSITORY_CENTRAL_NAME=`jq -r '.ARTIFACT_REPOSITORY_CENTRAL_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo ARTIFACT_REPOSITORY_CENTRAL_URL=`jq -r '.ARTIFACT_REPOSITORY_CENTRAL_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo LIBRARY_ARTIFACT_REPOSITORY_NAME=`jq -r '.LIBRARY_ARTIFACT_REPOSITORY_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo LIBRARY_ARTIFACT_REPOSITORY_URL=`jq -r '.LIBRARY_ARTIFACT_REPOSITORY_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo AWS_REGION=`jq -r '.AWS_REGION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo JAVA_JDK_VERSION=`jq -r '.JAVA_JDK_VERSION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo JAVA_DISTRIBUTION=`jq -r '.JAVA_DISTRIBUTION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo SUFIX_ARTIFACT_VERSION=`jq -r '.SUFIX_ARTIFACT_VERSION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo DEPLOYMENT_GROUP_NAME=`jq -r '.DEPLOYMENT_GROUP_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo DEPLOYMENT_CONFIG_NAME=`jq -r '.DEPLOYMENT_CONFIG_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo DEPLOYMENT_URL=`jq -r '.DEPLOYMENT_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        elif ( [ ${{ github.event.action }} = opened ] || [ ${{ github.event.action }} = reopened ] && [ ${{ github.base_ref }} = staging ] ) 
+        then
+            exit 1
+        fi
+  CI:
+    name: Continous Integration
+    needs: [Init]
+    if: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
+    outputs:
+      CODEARTIFACT_AUTH_TOKEN: ${{ env.CODEARTIFACT_AUTH_TOKEN }}
+    env:
+      AWS_REGION: ${{ needs.Init.outputs.AWS_REGION }}
+      ENVIRONMENT_NAME: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
+      AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
+      AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
+      ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_NAME }}
+      ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_URL }}
+      ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
+      ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
+      LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
+      LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_URL }}
+      JAVA_JDK_VERSION: ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
+      JAVA_DISTRIBUTION: ${{ needs.Init.outputs.JAVA_DISTRIBUTION }}
+      SUFIX_ARTIFACT_VERSION: ${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}
+      
+    steps: 
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
+      uses: actions/setup-java@v2
+      with:
+        java-version: '${{ env.JAVA_JDK_VERSION }}'
+        distribution: '${{ env.JAVA_DISTRIBUTION }}'
+        cache: 'maven'
+
+    - name: Configure AWS credentials from DevOps account
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Set Up CodeArtifact Token   
+      run: |         
+         echo CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain $AWS_CODEARTIFACT_DOMAIN --domain-owner $AWS_ACCOUNT_ID --query authorizationToken --output text --duration-seconds 900` >> $GITHUB_ENV
+
+    - name: Build and Unit Test
+      run: |
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+          echo "Compiling..."
+          echo "++++++++++++++++++++++++++++++++++++++++++++++++++"        
+          mvn -B package --file pom.xml -s settings.xml
+ 
+  CD:
+    name: Continous Deployment
+    needs: [Init, CI]
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged && (github.ref == 'develop' || github.ref == 'staging')) || (github.event_name == 'release' && (startsWith(github.ref, 'refs/tags/v') ||  startsWith(github.ref, 'refs/tags/HOTFIX_')))
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
+      url: '${{ needs.Init.outputs.DEPLOYMENT_URL }}'
+    outputs:
+      POM_VERSION: ${{ env.POM_VERSION }}
+    env:
+      ENVIRONMENT_NAME: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
+      AWS_REGION: ${{ needs.Init.outputs.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
+      AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
+      CODEARTIFACT_AUTH_TOKEN: ${{ needs.CI.outputs.CODEARTIFACT_AUTH_TOKEN }}
+      ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_NAME }}
+      ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_URL }}
+      ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
+      ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
+      LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
+      LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_URL }}
+      JAVA_JDK_VERSION: ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
+      JAVA_DISTRIBUTION: ${{ needs.Init.outputs.JAVA_DISTRIBUTION }}
+      SUFIX_ARTIFACT_VERSION: ${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}
+      
+    steps: 
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
+      uses: actions/setup-java@v2
+      with:
+        java-version: '${{ env.JAVA_JDK_VERSION }}'
+        distribution: '${{ env.JAVA_DISTRIBUTION }}'
+        cache: 'maven'
+
+    - name: Configure AWS credentials from DevOps account
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Uploading Artifact to AWS CodeArtifact    
+      run: |
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        echo "Getting version.."
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+        POM_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' -s settings.xml --non-recursive exec:exec)
+        echo POM_VERSION: $POM_VERSION
+        echo POM_VERSION=$POM_VERSION >> $GITHUB_ENV
+        ARTIFACT_VERSION=$POM_VERSION
+      
+        if [ ! -z "$SUFIX_ARTIFACT_VERSION" ]
+        then
+           ARTIFACT_VERSION="$POM_VERSION-$SUFIX_ARTIFACT_VERSION"
+        fi
+      
+        echo SUFIX_ARTIFACT_VERSION=$SUFIX_ARTIFACT_VERSION
+        echo ARTIFACT_VERSION=$ARTIFACT_VERSION 
+      
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        echo "Setting version..."
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        mvn versions:set -DnewVersion=$ARTIFACT_VERSION -s settings.xml
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        echo "Commit changes into project..."
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        mvn versions:commit -s settings.xml
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        echo "Uploading packaging to codeartifact"
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        mvn deploy -DaltDeploymentRepository=$AWS_CODEARTIFACT_DOMAIN-$ARTIFACT_REPOSITORY_NAME::default::$ARTIFACT_REPOSITORY_URL -s settings.xml 
+     
+    - name: Create CodeDeploy Deployment
+      run: |
+         APPLICATION_NAME=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.artifactId}' -s settings.xml --non-recursive exec:exec)
+         echo APPLICATION_NAME=$APPLICATION_NAME
+       
+         #run: aws deploy create-deployment --application-name $APPLICATION_NAME --deployment-group-name $DEPLOYMENT_GROUP_NAME --deployment-config-name $DEPLOYMENT_CONFIG_NAME --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
+
+  TaggingRepository:
+    name: Tagging Release Version into Repository
+    needs: [CD]
+    if: github.event_name == 'pull_request' && github.ref == 'staging' && github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    env:
+      POM_VERSION: ${{ needs.CD.outputs.POM_VERSION }}
+    steps:
+      - uses: actions/checkout@v2 
+    
+      - name: Tagging to Staging Branch        
+        run: |
+            artifactTag=v$POM_VERSION
+            echo "Tag Id: $artifactTag"
+            messageTag="Tag $artifactTag created automatically new version of product"
+            echo "Message Tag: $messageTag"            
+            git config --global user.email ""
+            git config --global user.name "${{ github.actor }}"
+            git tag -a $artifactTag -m "$messageTag"
+            git push --tags --progress
+            echo "Push created with tag: $artifactTag"

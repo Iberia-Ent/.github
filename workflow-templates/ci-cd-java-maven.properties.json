@@ -1,0 +1,8 @@
+{
+    "name": "Deploy to AWS EC2 Java Maven",
+    "description": "Deploy java maven application into AWS EC2 Instances. Reference: https://github.com/Iberia-Ent/software-engineering--workflow-java-maven",
+    "iconName": "ib-icon",
+    "categories": [
+        "Java"
+    ]
+}
