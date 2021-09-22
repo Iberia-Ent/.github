@@ -1,0 +1,8 @@
+{
+    "name": "Upload Artifact to AWS CodeArtifact",
+    "description": "Upload Java Maven Artifact to AWS CodeArtifact",
+    "iconName": "ib-icon",
+    "categories": [
+        "Java", "AWS", "CodeArtifact"
+    ]
+}
