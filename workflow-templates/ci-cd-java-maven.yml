@@ -1,10 +1,9 @@
-#Use git flow for deployments see: https://github.com/Iberia-Ent/software-engineering--git-flow-template
-#Git Flow
+#This workflow use Git Flow for deploying the application. Please see: https://github.com/Iberia-Ent/software-engineering--git-flow-template for more information.
 name: CICD_JAVA_MAVEN
 
 on:  
   push:  
-    branches-ignore: [ $default-branch, develop, staging ]    
+    branches-ignore: [ main, develop, staging ]    
   pull_request:  
     branches: [ develop, staging ]
     types:  [ opened, reopened, closed ]
@@ -21,8 +20,6 @@ jobs:
       AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
       AWS_CODEARTIFACT_DOMAIN: ${{ env.AWS_CODEARTIFACT_DOMAIN }}
       AWS_REGION: ${{ env.AWS_REGION }}
-      ARTIFACT_REPOSITORY_NAME: ${{ env.ARTIFACT_REPOSITORY_NAME }}      
-      ARTIFACT_REPOSITORY_URL: ${{ env.ARTIFACT_REPOSITORY_URL }}
       ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ env.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
       ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ env.ARTIFACT_REPOSITORY_CENTRAL_URL }}
       LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ env.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
@@ -33,10 +30,12 @@ jobs:
       DEPLOYMENT_GROUP_NAME: ${{ env.DEPLOYMENT_GROUP_NAME }}
       DEPLOYMENT_CONFIG_NAME: ${{ env.DEPLOYMENT_CONFIG_NAME }}
       DEPLOYMENT_URL: ${{ env.DEPLOYMENT_URL }}
+      BUCKET_REPOSITORY: ${{ env.BUCKET_REPOSITORY }}
       
     steps:
     - uses: actions/checkout@v2
-    - name: Set Up Environment Name
+        
+    - name: Set Up ci-config File
       run: |
         if [ ${{ github.event_name }} = pull_request ] && [ ${{ github.event.pull_request.merged }} ] && ( [ ${{ github.ref }} = develop ] ) || [ ${{ github.event_name }} = push ]
         then
@@ -74,8 +73,6 @@ jobs:
             echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
             echo AWS_ACCOUNT_ID=`jq -r '.AWS_ACCOUNT_ID' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo AWS_CODEARTIFACT_DOMAIN=`jq -r '.AWS_CODEARTIFACT_DOMAIN' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo ARTIFACT_REPOSITORY_NAME=`jq -r '.ARTIFACT_REPOSITORY_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo ARTIFACT_REPOSITORY_URL=`jq -r '.ARTIFACT_REPOSITORY_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo ARTIFACT_REPOSITORY_CENTRAL_NAME=`jq -r '.ARTIFACT_REPOSITORY_CENTRAL_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo ARTIFACT_REPOSITORY_CENTRAL_URL=`jq -r '.ARTIFACT_REPOSITORY_CENTRAL_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo LIBRARY_ARTIFACT_REPOSITORY_NAME=`jq -r '.LIBRARY_ARTIFACT_REPOSITORY_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
@@ -87,11 +84,13 @@ jobs:
             echo DEPLOYMENT_GROUP_NAME=`jq -r '.DEPLOYMENT_GROUP_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo DEPLOYMENT_CONFIG_NAME=`jq -r '.DEPLOYMENT_CONFIG_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo DEPLOYMENT_URL=`jq -r '.DEPLOYMENT_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo BUCKET_REPOSITORY=`jq -r '.BUCKET_REPOSITORY' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
             echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         elif ( [ ${{ github.event.action }} = opened ] || [ ${{ github.event.action }} = reopened ] && [ ${{ github.base_ref }} = staging ] ) 
         then
             exit 1
         fi
+        
   CI:
     name: Continous Integration
     needs: [Init]
@@ -104,8 +103,6 @@ jobs:
     env:
       AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
       AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
-      ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_NAME }}
-      ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_URL }}
       ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
       ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
       LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
@@ -128,17 +125,18 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ needs.Init.outputs.AWS_REGION }}
 
-    - name: Set Up CodeArtifact Token   
+    - name: Set Up CodeArtifact Token
       run: |         
          echo CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain $AWS_CODEARTIFACT_DOMAIN --domain-owner $AWS_ACCOUNT_ID --query authorizationToken --output text --duration-seconds 900` >> $GITHUB_ENV
-
+    
     - name: Build and Unit Test
       run: |
-          echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-          echo "Compiling..."
-          echo "++++++++++++++++++++++++++++++++++++++++++++++++++"        
-          mvn -B package --file pom.xml -s settings.xml
- 
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
+        echo "Compiling..."
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"        
+        mvn -B package --file pom.xml -s settings.xml
+        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"  
+
   CD:
     name: Continous Deployment
     needs: [Init, CI]
@@ -153,8 +151,6 @@ jobs:
       AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
       AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
       CODEARTIFACT_AUTH_TOKEN: ${{ needs.CI.outputs.CODEARTIFACT_AUTH_TOKEN }}
-      ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_NAME }}
-      ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_URL }}
       ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
       ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
       LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
@@ -176,45 +172,42 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ needs.Init.outputs.AWS_REGION }}
-        
-    - name: Uploading Artifact to AWS CodeArtifact    
-      run: |
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        echo "Getting version.."
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-        POM_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' -s settings.xml --non-recursive exec:exec)
-        echo POM_VERSION: $POM_VERSION
-        echo POM_VERSION=$POM_VERSION >> $GITHUB_ENV
+    - name: Set Up Pom Variables
+      run: |
+        ARTIFACT_ID_POM=`grep -oPm1 "(?<=<artifactId>)[^<]+" pom.xml`
+        FINAL_NAME_POM=`grep -oPm1 "(?<=<finalName>)[^<]+" pom.xml`
+        POM_VERSION=`grep -oPm1 "(?<=<version>)[^<]+" pom.xml`
         ARTIFACT_VERSION=$POM_VERSION
-      
+        
         if [ ! -z "${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}" ]
         then
            ARTIFACT_VERSION="$POM_VERSION-${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}"
         fi
-      
-        echo SUFIX_ARTIFACT_VERSION=${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}
-        echo ARTIFACT_VERSION=$ARTIFACT_VERSION 
-      
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        echo "Setting version..."
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        mvn versions:set -DnewVersion=$ARTIFACT_VERSION -s settings.xml
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        echo "Commit changes into project..."
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        mvn versions:commit -s settings.xml
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        echo "Uploading packaging to codeartifact"
-        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        mvn deploy -DaltDeploymentRepository=$AWS_CODEARTIFACT_DOMAIN-$ARTIFACT_REPOSITORY_NAME::default::$ARTIFACT_REPOSITORY_URL -s settings.xml 
+        
+        echo ARTIFACT_ID_POM=$ARTIFACT_ID_POM >> $GITHUB_ENV
+        echo FINAL_NAME_POM=$FINAL_NAME_POM >> $GITHUB_ENV        
+        echo ARTIFACT_VERSION=$ARTIFACT_VERSION >> $GITHUB_ENV
+        echo POM_VERSION=$POM_VERSION >> $GITHUB_ENV
+    
+    - name: Packaging Application
+      run: |
+        mvn -B package --file pom.xml -s settings.xml
+    
+    - name: Copying AppSpect into Output Directory
+      run: |
+        echo "Copying appsspect into package folder..."
+        cp appspec.yml dist/
+        mkdir dist/WAR
+        mv -f dist/${{ env.FINAL_NAME_POM }}.war dist/WAR
+        
+    - name: Uploading Package to S3 Bucket
+      run: |
+        aws deploy push --application-name ${{ env.FINAL_NAME_POM }} --s3-location s3://${{ needs.Init.outputs.BUCKET_REPOSITORY }}/${{ env.FINAL_NAME_POM }}/${{ env.ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.ARTIFACT_VERSION }}.zip --ignore-hidden-files --source dist/
      
     - name: Create CodeDeploy Deployment
       run: |
-         APPLICATION_NAME=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.artifactId}' -s settings.xml --non-recursive exec:exec)
-         echo APPLICATION_NAME=$APPLICATION_NAME
-       
-         #run: aws deploy create-deployment --application-name $APPLICATION_NAME --deployment-group-name $DEPLOYMENT_GROUP_NAME --deployment-config-name $DEPLOYMENT_CONFIG_NAME --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
+        aws deploy create-deployment --application-name ${{ env.FINAL_NAME_POM }} --deployment-config-name ${{ needs.Init.outputs.DEPLOYMENT_CONFIG_NAME }} --deployment-group-name ${{ needs.Init.outputs.DEPLOYMENT_GROUP_NAME }} --s3-location bucket=${{ needs.Init.outputs.BUCKET_REPOSITORY }},key=${{ env.FINAL_NAME_POM }}/${{ env.ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.ARTIFACT_VERSION }}.zip,bundleType=zip --description "Deployment generated automatically by: ${{ github.actor }}"
 
   TaggingRepository:
     name: Tagging Release Version into Repository
@@ -228,7 +221,7 @@ jobs:
         run: |
             artifactTag=v${{ needs.CD.outputs.POM_VERSION }}
             echo "Tag Id: $artifactTag"
-            messageTag="Tag $artifactTag created automatically new version of product"
+            messageTag="Tag $artifactTag created automatically new version of product."
             echo "Message Tag: $messageTag"            
             git config --global user.email ""
             git config --global user.name "${{ github.actor }}"
