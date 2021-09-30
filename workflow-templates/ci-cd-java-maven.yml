@@ -91,6 +91,15 @@ jobs:
             exit 1
         fi
         
+    - name: Validating Variables
+      if: ${{ env.ENVIRONMENT_NAME }}
+      run: |
+        if ( [ "${{ env.SUFIX_ARTIFACT_VERSION }}" = "" ] ) || ( [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "SNAPSHOT" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RC" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RELEASE" ] ) || ( [ "${{ env.ENVIRONMENT_NAME }}" = "Development" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "SNAPSHOT" ] ) || ( [ "${{ env.ENVIRONMENT_NAME }}" = "Preproduction" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RC" ] ) || ( [ "${{ env.ENVIRONMENT_NAME }}" = "Production" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RELEASE" ] )
+        then
+            echo "The variable SUFIX_ARTIFACT_VERSION located into ci-config.json is not valid, should be SNAPSHOT, RC or RELEASE"
+            exit 1
+        fi
+        
   CI:
     name: Continous Integration
     needs: [Init]
@@ -203,11 +212,11 @@ jobs:
         
     - name: Uploading Package to S3 Bucket
       run: |
-        aws deploy push --application-name ${{ env.FINAL_NAME_POM }} --s3-location s3://${{ needs.Init.outputs.BUCKET_REPOSITORY }}/${{ env.FINAL_NAME_POM }}/${{ env.ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.ARTIFACT_VERSION }}.zip --ignore-hidden-files --source dist/
+        aws deploy push --application-name ${{ env.FINAL_NAME_POM }} --s3-location s3://${{ needs.Init.outputs.BUCKET_REPOSITORY }}/${{ env.FINAL_NAME_POM }}/${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.POM_VERSION }}.zip --ignore-hidden-files --source dist/
      
     - name: Create CodeDeploy Deployment
       run: |
-        aws deploy create-deployment --application-name ${{ env.FINAL_NAME_POM }} --deployment-config-name ${{ needs.Init.outputs.DEPLOYMENT_CONFIG_NAME }} --deployment-group-name ${{ needs.Init.outputs.DEPLOYMENT_GROUP_NAME }} --s3-location bucket=${{ needs.Init.outputs.BUCKET_REPOSITORY }},key=${{ env.FINAL_NAME_POM }}/${{ env.ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.ARTIFACT_VERSION }}.zip,bundleType=zip --description "Deployment generated automatically by: ${{ github.actor }}"
+        aws deploy create-deployment --application-name ${{ env.FINAL_NAME_POM }} --deployment-config-name ${{ needs.Init.outputs.DEPLOYMENT_CONFIG_NAME }} --deployment-group-name ${{ needs.Init.outputs.DEPLOYMENT_GROUP_NAME }} --s3-location bucket=${{ needs.Init.outputs.BUCKET_REPOSITORY }},key=${{ env.FINAL_NAME_POM }}/${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.POM_VERSION }}.zip,bundleType=zip --description "Deployment generated automatically by: ${{ github.actor }}"
 
   TaggingRepository:
     name: Tagging Release Version into Repository
