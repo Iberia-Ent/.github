@@ -207,6 +207,7 @@ jobs:
       run: |
         echo "Copying appsspect into package folder..."
         cp appspec.yml dist/
+        cp -r hooks dist/
         mkdir dist/WAR
         mv -f dist/${{ env.FINAL_NAME_POM }}.war dist/WAR
         
