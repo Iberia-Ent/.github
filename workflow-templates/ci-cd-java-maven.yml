@@ -1,4 +1,7 @@
-#This workflow use Git Flow for deploying the application. Please see: https://github.com/Iberia-Ent/software-engineering--git-flow-template for more information.
+# Description: Workflow that allow you to build and deploy java maven application using git flow.
+# Version 1.0.14
+# GitHub Code: https://github.com/Iberia-Ent/software-engineering--workflow-java-maven
+# Git Flow Code: https://github.com/Iberia-Ent/software-engineering--git-flow-template
 name: CICD_JAVA_MAVEN
 
 on:  
@@ -17,20 +20,7 @@ jobs:
     runs-on: ubuntu-latest    
     outputs:
       ENVIRONMENT_NAME: ${{ env.ENVIRONMENT_NAME }}
-      AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
-      AWS_CODEARTIFACT_DOMAIN: ${{ env.AWS_CODEARTIFACT_DOMAIN }}
-      AWS_REGION: ${{ env.AWS_REGION }}
-      ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ env.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
-      ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ env.ARTIFACT_REPOSITORY_CENTRAL_URL }}
-      LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ env.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
-      LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ env.LIBRARY_ARTIFACT_REPOSITORY_URL }}
-      JAVA_JDK_VERSION: ${{ env.JAVA_JDK_VERSION }}
-      JAVA_DISTRIBUTION: ${{ env.JAVA_DISTRIBUTION }}
-      SUFIX_ARTIFACT_VERSION: ${{ env.SUFIX_ARTIFACT_VERSION }}
-      DEPLOYMENT_GROUP_NAME: ${{ env.DEPLOYMENT_GROUP_NAME }}
-      DEPLOYMENT_CONFIG_NAME: ${{ env.DEPLOYMENT_CONFIG_NAME }}
-      DEPLOYMENT_URL: ${{ env.DEPLOYMENT_URL }}
-      BUCKET_REPOSITORY: ${{ env.BUCKET_REPOSITORY }}
+      LEVEL_READ_FILE: ${{ env.LEVEL_READ_FILE }}
       
     steps:
     - uses: actions/checkout@v2
@@ -38,65 +28,42 @@ jobs:
     - name: Set Up ci-config File
       run: |
         if [ ${{ github.event_name }} = pull_request ] && [ ${{ github.event.pull_request.merged }} ] && ( [ ${{ github.ref }} = develop ] ) || [ ${{ github.event_name }} = push ]
-        then
-            DATA_JSON_FILE=`jq -c '.dev' ci-config.json`      
+        then                  
             echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
             echo DATA_JSON_FILE DEV: "$DATA_JSON_FILE"
             echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            ENVIRONMENT_NAME=Development
-            echo ENVIRONMENT_NAME=Development >> $GITHUB_ENV
+            ENVIRONMENT_NAME=Integration
+            echo ENVIRONMENT_NAME=Integration >> $GITHUB_ENV            
+            echo LEVEL_READ_FILE=.int >> $GITHUB_ENV
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         elif [ ${{ github.event_name }} = pull_request ] && [ ${{ github.head_ref }} = develop ] && ( ( [ ${{ github.event.action }} = opened ] || [ ${{ github.event.action }} = reopened ] ) && [ ${{ github.base_ref }} = staging ] ) || ( [ ${{ github.ref }} = staging ] && [ ${{ github.event.pull_request.merged }} ] )
-        then
-            DATA_JSON_FILE=`jq -c '.pre' ci-config.json`      
+        then            
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
             echo DATA_JSON_FILE PRE: "$DATA_JSON_FILE"
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            ENVIRONMENT_NAME=Preproduction
+            ENVIRONMENT_NAME=Preproduction            
+            echo LEVEL_READ_FILE=.pre >> $GITHUB_ENV
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         elif ( [[ ${{ github.ref }} == refs/tags/v* ]] || [[ ${{ github.ref }} == refs/tags/HOTFIX_* ]] && [ ${{ github.event_name }} = release ] )
-        then
-            DATA_JSON_FILE=`jq -c '.prod' ci-config.json`      
+        then            
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
             echo DATA_JSON_FILE PRO: "$DATA_JSON_FILE"
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            ENVIRONMENT_NAME=Production
+            ENVIRONMENT_NAME=Production            
+            echo LEVEL_READ_FILE=.prod >> $GITHUB_ENV
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         fi
         
         echo ENVIRONMENT_NAME=$ENVIRONMENT_NAME >> $GITHUB_ENV
         echo ENVIRONMENT_NAME: "$ENVIRONMENT_NAME"
+        
         if [ ! -z "$ENVIRONMENT_NAME" ]
         then
             echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            echo   SETUP PROPIERTIES OF THE ENVIRONMENT: $ENVIRONMENT_NAME and file:"$DATA_JSON_FILE"
-            echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            echo AWS_ACCOUNT_ID=`jq -r '.AWS_ACCOUNT_ID' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo AWS_CODEARTIFACT_DOMAIN=`jq -r '.AWS_CODEARTIFACT_DOMAIN' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo ARTIFACT_REPOSITORY_CENTRAL_NAME=`jq -r '.ARTIFACT_REPOSITORY_CENTRAL_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo ARTIFACT_REPOSITORY_CENTRAL_URL=`jq -r '.ARTIFACT_REPOSITORY_CENTRAL_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo LIBRARY_ARTIFACT_REPOSITORY_NAME=`jq -r '.LIBRARY_ARTIFACT_REPOSITORY_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo LIBRARY_ARTIFACT_REPOSITORY_URL=`jq -r '.LIBRARY_ARTIFACT_REPOSITORY_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo AWS_REGION=`jq -r '.AWS_REGION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo JAVA_JDK_VERSION=`jq -r '.JAVA_JDK_VERSION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo JAVA_DISTRIBUTION=`jq -r '.JAVA_DISTRIBUTION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo SUFIX_ARTIFACT_VERSION=`jq -r '.SUFIX_ARTIFACT_VERSION' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo DEPLOYMENT_GROUP_NAME=`jq -r '.DEPLOYMENT_GROUP_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo DEPLOYMENT_CONFIG_NAME=`jq -r '.DEPLOYMENT_CONFIG_NAME' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo DEPLOYMENT_URL=`jq -r '.DEPLOYMENT_URL' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
-            echo BUCKET_REPOSITORY=`jq -r '.BUCKET_REPOSITORY' <<< "$DATA_JSON_FILE"` >> $GITHUB_ENV
+            echo ENVIRONMENT_NAME: "$ENVIRONMENT_NAME"
             echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         elif ( [ ${{ github.event.action }} = opened ] || [ ${{ github.event.action }} = reopened ] && [ ${{ github.base_ref }} = staging ] ) 
         then
-            exit 1
-        fi
-        
-    - name: Validating Variables
-      if: ${{ env.ENVIRONMENT_NAME }}
-      run: |
-        if ( [ "${{ env.SUFIX_ARTIFACT_VERSION }}" = "" ] ) || ( [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "SNAPSHOT" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RC" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RELEASE" ] ) || ( [ "${{ env.ENVIRONMENT_NAME }}" = "Development" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "SNAPSHOT" ] ) || ( [ "${{ env.ENVIRONMENT_NAME }}" = "Preproduction" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RC" ] ) || ( [ "${{ env.ENVIRONMENT_NAME }}" = "Production" ] && [ "${{ env.SUFIX_ARTIFACT_VERSION }}" != "RELEASE" ] )
-        then
-            echo "The variable SUFIX_ARTIFACT_VERSION located into ci-config.json is not valid, should be SNAPSHOT, RC or RELEASE"
             exit 1
         fi
         
@@ -109,22 +76,20 @@ jobs:
       name: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
     outputs:
       CODEARTIFACT_AUTH_TOKEN: ${{ env.CODEARTIFACT_AUTH_TOKEN }}
-    env:
-      AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
-      AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
-      ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
-      ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
-      LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
-      LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_URL }}
       
     steps: 
     - uses: actions/checkout@v2
 
-    - name: Set up JDK ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
+    - name: Loading Environment Variables
+      uses: Iberia-Ent/software-engineering--read-file-action@v1.0.0
+      with:
+        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'
+
+    - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
       with:
-        java-version: '${{ needs.Init.outputs.JAVA_JDK_VERSION }}'
-        distribution: '${{ needs.Init.outputs.JAVA_DISTRIBUTION }}'
+        java-version: '${{ env.JAVA_JDK_VERSION }}'
+        distribution: '${{ env.JAVA_DISTRIBUTION }}'
         cache: 'maven'
 
     - name: Configure AWS credentials from DevOps account
@@ -132,11 +97,11 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ needs.Init.outputs.AWS_REGION }}
+        aws-region: ${{ env.AWS_REGION }}
 
-    - name: Set Up CodeArtifact Token
+    - name: Set Up CodeArtifact Token   
       run: |         
-         echo CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain $AWS_CODEARTIFACT_DOMAIN --domain-owner $AWS_ACCOUNT_ID --query authorizationToken --output text --duration-seconds 900` >> $GITHUB_ENV
+        echo CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain ${{ env.AWS_CODEARTIFACT_DOMAIN }} --domain-owner ${{ env.AWS_ACCOUNT_ID }} --query authorizationToken --output text --duration-seconds 900` >> $GITHUB_ENV
     
     - name: Build and Unit Test
       run: |
@@ -153,26 +118,24 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
-      url: '${{ needs.Init.outputs.DEPLOYMENT_URL }}'
+      url: '${{ env.DEPLOYMENT_URL }}'
     outputs:
       POM_VERSION: ${{ env.POM_VERSION }}
     env:
-      AWS_ACCOUNT_ID: ${{ needs.Init.outputs.AWS_ACCOUNT_ID }}
-      AWS_CODEARTIFACT_DOMAIN: ${{ needs.Init.outputs.AWS_CODEARTIFACT_DOMAIN }}
-      CODEARTIFACT_AUTH_TOKEN: ${{ needs.CI.outputs.CODEARTIFACT_AUTH_TOKEN }}
-      ARTIFACT_REPOSITORY_CENTRAL_NAME: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_NAME }}
-      ARTIFACT_REPOSITORY_CENTRAL_URL: ${{ needs.Init.outputs.ARTIFACT_REPOSITORY_CENTRAL_URL }}
-      LIBRARY_ARTIFACT_REPOSITORY_NAME: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_NAME }}
-      LIBRARY_ARTIFACT_REPOSITORY_URL: ${{ needs.Init.outputs.LIBRARY_ARTIFACT_REPOSITORY_URL }}
-      
+        CODEARTIFACT_AUTH_TOKEN: ${{ needs.CI.outputs.CODEARTIFACT_AUTH_TOKEN }}
     steps: 
     - uses: actions/checkout@v2
 
-    - name: Set up JDK ${{ needs.Init.outputs.JAVA_JDK_VERSION }}
+    - name: Loading Environment Variables
+      uses: Iberia-Ent/software-engineering--read-file-action@v1.0.0
+      with:
+        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'
+
+    - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
       with:
-        java-version: '${{ needs.Init.outputs.JAVA_JDK_VERSION }}'
-        distribution: '${{ needs.Init.outputs.JAVA_DISTRIBUTION }}'
+        java-version: '${{ env.JAVA_JDK_VERSION }}'
+        distribution: '${{ env.JAVA_DISTRIBUTION }}'
         cache: 'maven'
 
     - name: Configure AWS credentials from DevOps account
@@ -180,23 +143,16 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ needs.Init.outputs.AWS_REGION }}
+        aws-region: ${{ env.AWS_REGION }}
 
     - name: Set Up Pom Variables
       run: |
         ARTIFACT_ID_POM=`grep -oPm1 "(?<=<artifactId>)[^<]+" pom.xml`
         FINAL_NAME_POM=`grep -oPm1 "(?<=<finalName>)[^<]+" pom.xml`
-        POM_VERSION=`grep -oPm1 "(?<=<version>)[^<]+" pom.xml`
-        ARTIFACT_VERSION=$POM_VERSION
-        
-        if [ ! -z "${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}" ]
-        then
-           ARTIFACT_VERSION="$POM_VERSION-${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}"
-        fi
-        
+        POM_VERSION=`grep -oPm1 "(?<=<version>)[^<]+" pom.xml`               
+     
         echo ARTIFACT_ID_POM=$ARTIFACT_ID_POM >> $GITHUB_ENV
-        echo FINAL_NAME_POM=$FINAL_NAME_POM >> $GITHUB_ENV        
-        echo ARTIFACT_VERSION=$ARTIFACT_VERSION >> $GITHUB_ENV
+        echo FINAL_NAME_POM=$FINAL_NAME_POM >> $GITHUB_ENV
         echo POM_VERSION=$POM_VERSION >> $GITHUB_ENV
     
     - name: Packaging Application
@@ -213,11 +169,11 @@ jobs:
         
     - name: Uploading Package to S3 Bucket
       run: |
-        aws deploy push --application-name ${{ env.FINAL_NAME_POM }} --s3-location s3://${{ needs.Init.outputs.BUCKET_REPOSITORY }}/${{ env.FINAL_NAME_POM }}/${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.POM_VERSION }}.zip --ignore-hidden-files --source dist/
+        aws deploy push --application-name ${{ env.FINAL_NAME_POM }} --s3-location s3://${{ env.BUCKET_REPOSITORY }}/${{ env.FINAL_NAME_POM }}/${{ env.ARTIFACT_ID_POM }}-${{ env.POM_VERSION }}.zip --ignore-hidden-files --source dist/
      
     - name: Create CodeDeploy Deployment
       run: |
-        aws deploy create-deployment --application-name ${{ env.FINAL_NAME_POM }} --deployment-config-name ${{ needs.Init.outputs.DEPLOYMENT_CONFIG_NAME }} --deployment-group-name ${{ needs.Init.outputs.DEPLOYMENT_GROUP_NAME }} --s3-location bucket=${{ needs.Init.outputs.BUCKET_REPOSITORY }},key=${{ env.FINAL_NAME_POM }}/${{ needs.Init.outputs.SUFIX_ARTIFACT_VERSION }}/${{ env.ARTIFACT_ID_POM }}-${{ env.POM_VERSION }}.zip,bundleType=zip --description "Deployment generated automatically by: ${{ github.actor }}"
+        aws deploy create-deployment --application-name ${{ env.FINAL_NAME_POM }} --deployment-config-name ${{ env.DEPLOYMENT_CONFIG_NAME }} --deployment-group-name ${{ env.DEPLOYMENT_GROUP_NAME }} --s3-location bucket=${{ env.BUCKET_REPOSITORY }},key=${{ env.FINAL_NAME_POM }}/${{ env.ARTIFACT_ID_POM }}-${{ env.POM_VERSION }}.zip,bundleType=zip --description "Deployment generated automatically by: ${{ github.actor }}"
 
   TaggingRepository:
     name: Tagging Release Version into Repository
