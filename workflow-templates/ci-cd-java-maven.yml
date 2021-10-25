@@ -1,5 +1,5 @@
 # Description: Workflow that allow you to build and deploy java maven application using git flow.
-# Version 1.0.14
+# Version 1.1.0
 # GitHub Code: https://github.com/Iberia-Ent/software-engineering--workflow-java-maven
 # Git Flow Code: https://github.com/Iberia-Ent/software-engineering--git-flow-template
 name: CICD_JAVA_MAVEN
