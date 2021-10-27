@@ -1,5 +1,5 @@
 # Description: Upload to codeartifact repository pipeline.
-# Version 1.2.0
+# Version 1.3.0
 # GitHub Code: https://github.com/Iberia-Ent/software-engineering--workflow-codeartifact-java-maven
 # Github Template: https://github.com/Iberia-Ent/software-engineering--codeartifact-java-maven-template
 name: CodeArtifact Java Maven
@@ -98,6 +98,8 @@ jobs:
       name: ${{ needs.Init.outputs.ENVIRONMENT_NAME }}
     env:
       CODEARTIFACT_AUTH_TOKEN: ${{ needs.CI.outputs.CODEARTIFACT_AUTH_TOKEN }}
+    outputs:
+      POM_VERSION: ${{ env.POM_VERSION }}
         
     steps: 
     - uses: actions/checkout@v2
@@ -163,10 +165,11 @@ jobs:
     
       - name: Tagging to Staging Branch        
         run: |
-            artifactTag=$(date +'v%Y.%m.%d.%H%M')
+            dateValue=$(date +'v%Y.%m.%d.%H%M')
+            artifactTag=v${{ needs.CD.outputs.POM_VERSION }}
             echo "$GITHUB_CONTEXT"
             echo "Tag Id: $artifactTag"
-            messageTag="Tag $artifactTag created automatically new version of artifact"
+            messageTag="Tag $artifactTag created on $dateValue automatically new version of artifact"
             echo "Message Tag: $messageTag"
             git config --global user.email ""
             git config --global user.name "${{ github.actor }}"
