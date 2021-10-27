@@ -1,5 +1,5 @@
 # Description: Workflow that allow you to build and deploy java maven application using git flow.
-# Version 1.1.0
+# Version 1.2.0
 # GitHub Code: https://github.com/Iberia-Ent/software-engineering--workflow-java-maven
 # Git Flow Code: https://github.com/Iberia-Ent/software-engineering--git-flow-template
 name: CICD_JAVA_MAVEN
@@ -13,7 +13,7 @@ on:
   release:
     types:
       - created
-
+            
 jobs:
   Init:
     name: Set up variables
@@ -83,7 +83,8 @@ jobs:
     - name: Loading Environment Variables
       uses: Iberia-Ent/software-engineering--read-file-action@v1.0.0
       with:
-        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'
+        file-path: '.github/config/ci-config.json'
+        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'        
 
     - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
@@ -108,7 +109,7 @@ jobs:
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
         echo "Compiling..."
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"        
-        mvn -B package --file pom.xml -s settings.xml
+        mvn -B package --file pom.xml -s .github/config/settings.xml
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"  
 
   CD:
@@ -129,7 +130,8 @@ jobs:
     - name: Loading Environment Variables
       uses: Iberia-Ent/software-engineering--read-file-action@v1.0.0
       with:
-        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'
+        file-path: '.github/config/ci-config.json'
+        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'  
 
     - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
@@ -157,13 +159,13 @@ jobs:
     
     - name: Packaging Application
       run: |
-        mvn -B package --file pom.xml -s settings.xml
+        mvn -B package --file pom.xml -s .github/config/settings.xml
     
     - name: Copying AppSpect into Output Directory
       run: |
         echo "Copying appsspect into package folder..."
-        cp appspec.yml dist/
-        cp -r hooks dist/
+        cp .github/config/appspec.yml dist/
+        cp -r .github/config/hooks dist/
         mkdir dist/WAR
         mv -f dist/${{ env.FINAL_NAME_POM }}.war dist/WAR
         
