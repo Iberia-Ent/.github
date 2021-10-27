@@ -1,7 +1,7 @@
 # Description: Upload to codeartifact repository pipeline.
-# Version 1.0.0
+# Version 1.2.0
 # GitHub Code: https://github.com/Iberia-Ent/software-engineering--workflow-codeartifact-java-maven
-# Githun Template: https://github.com/Iberia-Ent/software-engineering--codeartifact-java-maven-template
+# Github Template: https://github.com/Iberia-Ent/software-engineering--codeartifact-java-maven-template
 name: CodeArtifact Java Maven
 
 on:  
@@ -62,7 +62,8 @@ jobs:
     - name: Loading Environment Variables
       uses: Iberia-Ent/software-engineering--read-file-action@v1.0.0
       with:
-        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'
+        file-path: '.github/config/ci-config.json'
+        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'  
     
     - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
@@ -87,7 +88,7 @@ jobs:
        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
        echo "Compiling..."
        echo "++++++++++++++++++++++++++++++++++++++++++++++++++"  
-        mvn -B package --file pom.xml -s settings.xml 
+        mvn -B package --file pom.xml -s .github/config/settings.xml 
   CD:
     name: Continous Deployment     
     needs: [Init, CI]
@@ -104,7 +105,8 @@ jobs:
     - name: Loading Environment Variables
       uses: Iberia-Ent/software-engineering--read-file-action@v1.0.0
       with:
-        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'
+        file-path: '.github/config/ci-config.json'
+        level: '${{ needs.Init.outputs.LEVEL_READ_FILE }}'  
     
     - name: Set up JDK ${{ env.JAVA_JDK_VERSION }}
       uses: actions/setup-java@v2
@@ -125,7 +127,7 @@ jobs:
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
         echo "Getting version.."
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        POM_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' -s settings.xml --non-recursive exec:exec)
+        POM_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' -s .github/config/settings.xml --non-recursive exec:exec)
         echo POM_VERSION: $POM_VERSION
         echo POM_VERSION=$POM_VERSION >> $GITHUB_ENV
         ARTIFACT_VERSION=$POM_VERSION
@@ -141,15 +143,15 @@ jobs:
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
         echo "Setting version..."
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        mvn versions:set -DnewVersion=$ARTIFACT_VERSION -s settings.xml
+        mvn versions:set -DnewVersion=$ARTIFACT_VERSION -s .github/config/settings.xml
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
         echo "Commit changes into project..."
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        mvn versions:commit -s settings.xml
+        mvn versions:commit -s .github/config/settings.xml
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
         echo "Uploading packaging to codeartifact"
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++"
-        mvn deploy -DaltDeploymentRepository=$AWS_CODEARTIFACT_DOMAIN-$AWS_CODEARTIFACT_LIBRARY_REPOSITORY_NAME::default::${{ env.AWS_CODEARTIFACT_LIBRARY_REPOSITORY_URL }} -s settings.xml 
+        mvn deploy -DaltDeploymentRepository=$AWS_CODEARTIFACT_DOMAIN-$AWS_CODEARTIFACT_LIBRARY_REPOSITORY_NAME::default::${{ env.AWS_CODEARTIFACT_LIBRARY_REPOSITORY_URL }} -s .github/config/settings.xml 
       
   TaggingRepository:
     name: Tagging Artifact Version into Repository
