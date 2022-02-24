@@ -11,6 +11,10 @@ We hardly recommend you to start trought these labs, from [Learning Labs](https:
 - [First Day on GitHub](https://lab.github.com/githubtraining/first-day-on-github)
 - [First Week on GitHub](https://lab.github.com/githubtraining/first-week-on-github)
 
+## Support
+
+General problems on Git or Github usages can be asked to [Githu Support](https://support.github.com/). Questions or doubts in [Github Community](https://github.community/).
+
 
 # A digital journey
 Applying incremental delivery, documentation as code, software engineering architecture and open source methodologies like InnerSource, next is the journey workflow that guides our approach and progresses.
@@ -53,8 +57,6 @@ You don’t need to start from scratch. Fully compliant projects are already imp
 
 ### InnerSource Practise
 Another important concept of this organization is [Innersource](https://resources.github.com/whitepapers/introduction-to-innersource/) and how IBERIA L.A.E. implements it. We want to apply open source practices to work collaboratively and efficiently. [InnerSource Practise repository](https://github.com/Iberia-Ent/software-engineering--innersource)
-
-
 
 
 # To Sum Up
