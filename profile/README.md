@@ -6,10 +6,9 @@ Multiple user accounts can collaborate on shared projects by joining the same or
 
 # Git and Github
 
-We hardly recommend you to start trought these labs, from [Learning Labs](https://lab.github.com/) if you a re new to Git and/or Github:
+If you have never used git or github, we encourage you to learn trough [Github Skills](https://skills.github.com/) where you have courses for your first day and weeks.
 
-- [First Day on GitHub](https://lab.github.com/githubtraining/first-day-on-github)
-- [First Week on GitHub](https://lab.github.com/githubtraining/first-week-on-github)
+We have enforced commits signatures, in order to be able to push to our repositories from your machines [please enable the feature by default](./commit_signature.md)
 
 ## Support
 
