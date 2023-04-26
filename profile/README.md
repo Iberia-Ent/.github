@@ -8,11 +8,11 @@ Multiple user accounts can collaborate on shared projects by joining the same or
 
 If you have never used git or github, we encourage you to learn trough [Github Skills](https://skills.github.com/) where you have courses for your first day and weeks.
 
-We have enforced commits signatures, in order to be able to push to our repositories from your machines [please enable the feature by default](./commit_signature.md).
+We have enforced commits signatures, in order to be able to push to our repositories from your machines [please enable the feature by default](/profile/commit_signature.md).
 
 ## Support
 
-General problems on Git or Github usages can be asked to [Githu Support](https://support.github.com/). Questions or doubts in [Github Community](https://github.community/).
+General problems on Git or Github usages can be asked to [Github Support](https://support.github.com/). Questions or doubts in [Github Community](https://github.community/).
 
 
 # A digital journey
