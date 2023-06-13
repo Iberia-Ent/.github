@@ -42,6 +42,7 @@ The next *technologies* are available:
 - **Service-Oriented Architecture (SOA)** [Repository.](https://github.com/Iberia-Ent/software-engineering--best-practices--soa--documentation)
 - **Single Page Applications** [Repository.](https://github.com/Iberia-Ent/software-engineering--best-practices--spa--web-client--documentation)
 - **Microfrontends** [Repository.](https://github.com/Iberia-Ent/software-engineering--best-practices--microfrontend--web-client--documentation)
+- **Monitoring** [Repository.](https://github.com/Iberia-Ent/software-engineering--best-practices--monitoring#readme)
 - **Terraform - Infrastructure as Code** [Repository.](https://github.com/Iberia-Ent/software-engineering--best-practices--iac--terraform--documentation)
 
 ### Getting Started Archetypes
