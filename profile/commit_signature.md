@@ -14,7 +14,7 @@ git config --global user.email "youremail@iberia.com"
 git config --global user.name "Your Name"
 
 git config --global gpg.format ssh
-git config --global user.signingkey ~/.ssh/github-key-ssh
+git config --global user.signingkey ~/.ssh/github-key-ssh.pub
 
 git config --global commit.gpgsign true
 ```
