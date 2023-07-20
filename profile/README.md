@@ -35,6 +35,17 @@ We need to define a set of values and behaviours that we want to promote in our 
 #### Software Standards
 We need to enable interoperability between different systems and components created by different developers and to encourage common practices and standardized conventions. [Software Standards repository](https://github.com/Iberia-Ent/software-engineering--standards#readme).
 
+| Repository Name | Description |
+| --- | --- |
+| software-engineering--innersource--standards | Repository that explain the way to start working in projects at Iberia organization using our innersource. |
+| software-engineering--workflows--standards | In this repository you can find how to work with workflows, naming convention and some commons workflows. |
+| software-engineering--aws--standards | In this repository you can find the accounts types and how to create AWS accounts. |
+| software-engineering--runners--standards | In this repository you can find how to work with your self-hosted runners, naming convention and how create a new one. |
+| software-engineering--actions--standards | In this repository you can find how to work with actions, naming convention and some commons actions. |
+| software-engineering--terraform--standards | In this repository you can find how to work with terraform, naming convention, workflows defined and some commons terraform modules. |
+| software-engineering--delivery-journey-model--standards | In this repository you can find the delivery journey model for legacy applications and new products. |
+| software-engineering--templates--standards | In this repository you can find how to work with templates, naming convention, how create a new one and some commons templates. |
+
 #### Reference Architecture
 Following the previously defined framework, principles and standards, we define our High Level Reference Architecture for each business domain. We stablish a common development, infrastructure and execution architecture (high level).
 
