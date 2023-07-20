@@ -21,10 +21,10 @@ We are proud :confetti_ball: to have you as part of our team where we are a coll
 ### :books: SwE Metamodel
 Applying incremental delivery, documentation as code, software engineering architecture and open source methodologies like InnerSource, next is the "SwE Metamodel" that guides our approach and progresses.
 
-<p align="center"><img src="./images/strategy-resources-resources.drawio.svg"></p>
-
 <details><summary>Ready to learn more about the different elements? Expand me to find out more.</summary>
 <p>
+
+<p align="center"><img src="./images/strategy-resources-resources.drawio.svg"></p>
 
 #### Software Principles
 Its objectives are to guide engineers, help them to make decisions aligned with our thinking, also to share our principles with colleagues beyond our Technical Profession (business, users, customers...) to help them understand why we make the decisions that we do. [Software Principles repository](https://github.com/Iberia-Ent/software-engineering--principles#readme).
@@ -35,16 +35,14 @@ We need to define a set of values and behaviours that we want to promote in our 
 #### Software Standards
 We need to enable interoperability between different systems and components created by different developers and to encourage common practices and standardized conventions. [Software Standards repository](https://github.com/Iberia-Ent/software-engineering--standards#readme).
 
-| Repository Name | Description |
-| --- | --- |
-| software-engineering--innersource--standards | Repository that explain the way to start working in projects at Iberia organization using our innersource. |
-| software-engineering--workflows--standards | In this repository you can find how to work with workflows, naming convention and some commons workflows. |
-| software-engineering--aws--standards | In this repository you can find the accounts types and how to create AWS accounts. |
-| software-engineering--runners--standards | In this repository you can find how to work with your self-hosted runners, naming convention and how create a new one. |
-| software-engineering--actions--standards | In this repository you can find how to work with actions, naming convention and some commons actions. |
-| software-engineering--terraform--standards | In this repository you can find how to work with terraform, naming convention, workflows defined and some commons terraform modules. |
-| software-engineering--delivery-journey-model--standards | In this repository you can find the delivery journey model for legacy applications and new products. |
-| software-engineering--templates--standards | In this repository you can find how to work with templates, naming convention, how create a new one and some commons templates. |
+##### [Innersource Standards](https://github.com/Iberia-Ent/software-engineering--innersource--standards#innersource-in-iberia): Repository that explain the way to start working in projects at Iberia organization using our innersource.
+##### [Workflows Standards](https://github.com/Iberia-Ent/software-engineering--workflows--standards#workflows): In this repository you can find how to work with workflows, naming convention and some commons workflows.
+##### [Aws Standards](https://github.com/Iberia-Ent/software-engineering--aws--standards#aws): In this repository you can find the accounts types and how to create AWS accounts.
+##### [Runners Standards](https://github.com/Iberia-Ent/software-engineering--runners--standards#runners): In this repository you can find how to work with your self-hosted runners, naming convention and how create a new one.
+##### [Actions Standards](https://github.com/Iberia-Ent/software-engineering--actions--standards#action): In this repository you can find how to work with actions, naming convention and some commons actions.
+##### [Terraform Standards](https://github.com/Iberia-Ent/software-engineering--terraform--standards#terraform): In this repository you can find how to work with terraform, naming convention, workflows defined and some commons terraform modules.
+##### [Templates Standards](https://github.com/Iberia-Ent/software-engineering--templates--standards#templates): In this repository you can find how to work with templates, naming convention, how create a new one and some commons templates.
+##### [Delivery Journey Model Standards](https://github.com/Iberia-Ent/software-engineering--delivery-journey-model--standards#product-delivery-journey): In this repository you can find the delivery journey model for legacy applications and new products.
 
 #### Reference Architecture
 Following the previously defined framework, principles and standards, we define our High Level Reference Architecture for each business domain. We stablish a common development, infrastructure and execution architecture (high level).
