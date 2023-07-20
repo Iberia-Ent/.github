@@ -35,14 +35,14 @@ We need to define a set of values and behaviours that we want to promote in our 
 #### Software Standards
 We need to enable interoperability between different systems and components created by different developers and to encourage common practices and standardized conventions. [Software Standards repository](https://github.com/Iberia-Ent/software-engineering--standards#readme).
 
-##### [Innersource Standards](https://github.com/Iberia-Ent/software-engineering--innersource--standards#innersource-in-iberia): Repository that explain the way to start working in projects at Iberia organization using our innersource.
-##### [Workflows Standards](https://github.com/Iberia-Ent/software-engineering--workflows--standards#workflows): In this repository you can find how to work with workflows, naming convention and some commons workflows.
-##### [Aws Standards](https://github.com/Iberia-Ent/software-engineering--aws--standards#aws): In this repository you can find the accounts types and how to create AWS accounts.
-##### [Runners Standards](https://github.com/Iberia-Ent/software-engineering--runners--standards#runners): In this repository you can find how to work with your self-hosted runners, naming convention and how create a new one.
-##### [Actions Standards](https://github.com/Iberia-Ent/software-engineering--actions--standards#action): In this repository you can find how to work with actions, naming convention and some commons actions.
-##### [Terraform Standards](https://github.com/Iberia-Ent/software-engineering--terraform--standards#terraform): In this repository you can find how to work with terraform, naming convention, workflows defined and some commons terraform modules.
-##### [Templates Standards](https://github.com/Iberia-Ent/software-engineering--templates--standards#templates): In this repository you can find how to work with templates, naming convention, how create a new one and some commons templates.
-##### [Delivery Journey Model Standards](https://github.com/Iberia-Ent/software-engineering--delivery-journey-model--standards#product-delivery-journey): In this repository you can find the delivery journey model for legacy applications and new products.
+- ##### [Innersource Standards](https://github.com/Iberia-Ent/software-engineering--innersource--standards#innersource-in-iberia): Repository that explain the way to start working in projects at Iberia organization using our innersource.
+- ##### [Workflows Standards](https://github.com/Iberia-Ent/software-engineering--workflows--standards#workflows): In this repository you can find how to work with workflows, naming convention and some commons workflows.
+- ##### [Aws Standards](https://github.com/Iberia-Ent/software-engineering--aws--standards#aws): In this repository you can find the accounts types and how to create AWS accounts.
+- ##### [Runners Standards](https://github.com/Iberia-Ent/software-engineering--runners--standards#runners): In this repository you can find how to work with your self-hosted runners, naming convention and how create a new one.
+- ##### [Actions Standards](https://github.com/Iberia-Ent/software-engineering--actions--standards#action): In this repository you can find how to work with actions, naming convention and some commons actions.
+- ##### [Terraform Standards](https://github.com/Iberia-Ent/software-engineering--terraform--standards#terraform): In this repository you can find how to work with terraform, naming convention, workflows defined and some commons terraform modules.
+- ##### [Templates Standards](https://github.com/Iberia-Ent/software-engineering--templates--standards#templates): In this repository you can find how to work with templates, naming convention, how create a new one and some commons templates.
+- ##### [Delivery Journey Model Standards](https://github.com/Iberia-Ent/software-engineering--delivery-journey-model--standards#product-delivery-journey): In this repository you can find the delivery journey model for legacy applications and new products.
 
 #### Reference Architecture
 Following the previously defined framework, principles and standards, we define our High Level Reference Architecture for each business domain. We stablish a common development, infrastructure and execution architecture (high level).
