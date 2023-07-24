@@ -1,7 +1,4 @@
 ## Hi, this is us :clap:
-
-![aircraft-front-v2](https://github.com/Iberia-Ent/.github/assets/87304455/d57fed39-6633-4c96-9923-f3d5704a9e73)
-
 This is the **IBERIA L.A.E.** :airplane: Organization for accounts where Iberia's businesses can collaborate across many projects at once. Owners and administrators can manage member access to the organization's data and projects.
 
 Multiple user accounts can collaborate on shared projects by joining the same organization account, which owns the repositories.
@@ -24,7 +21,7 @@ Applying incremental delivery, documentation as code, software engineering archi
 <details><summary>Ready to learn more about the different elements? Expand me to find out more.</summary>
 <p>
 
-<p align="center"><img src="./images/strategy-resources-resources.drawio.svg"></p>
+<p align="center"><img src="/profile/images/strategy-resources-resources.drawio.svg"></p>
 
 #### Software Principles
 Its objectives are to guide engineers, help them to make decisions aligned with our thinking, also to share our principles with colleagues beyond our Technical Profession (business, users, customers...) to help them understand why we make the decisions that we do. [Software Principles repository](https://github.com/Iberia-Ent/software-engineering--principles#readme).
